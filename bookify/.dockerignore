@@ -1,0 +1,11 @@
+.git
+.gitignore
+.python-version
+.venv
+  pycache  /
+*.sqlite3
+.env
+.env.local
+*.md
+db.sqlite3
+.vscode/
