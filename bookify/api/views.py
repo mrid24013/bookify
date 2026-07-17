@@ -20,12 +20,10 @@ class ReservacionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Si es Administrador ve todas las reservas; si es Cliente solo las suyas 
         user = self.request.user
         if user.is_staff:
             return Reservacion.objects.all()
         return Reservacion.objects.filter(usuario=user)
 
     def perform_create(self, serializer):
-        # Asocia automáticamente la reserva al usuario autenticado de Postman
         serializer.save(usuario=self.request.user)
