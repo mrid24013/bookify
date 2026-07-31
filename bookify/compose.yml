@@ -16,7 +16,7 @@ services:
   web:
     build: .
     container_name: bookify_backend
-    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8080
     volumes:
       - .:/app
     env_file:
@@ -30,8 +30,7 @@ services:
     image: nginx:alpine
     container_name: bookify_proxy
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:8080"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/nginx/certs:ro

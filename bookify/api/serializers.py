@@ -9,9 +9,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class EspacioSerializer(serializers.ModelSerializer):
+    esta_disponible = serializers.BooleanField(read_only=True)
     class Meta:
         model = Espacio
-        fields = '__all__'
+        fields = ['id', 'nombre', 'descripcion', 'capacidad', 'activo', 'esta_disponible']
 
 
 class ReservacionSerializer(serializers.ModelSerializer):

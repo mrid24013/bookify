@@ -8,27 +8,37 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background-color: #f4f4f9; }
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 20px; }
-        input[type="text"] { width: 70%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #218838; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-bottom: 10px; }
+        .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { padding: 10px 20px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-espacios { background-color: #28a745; }
+        .btn-espacios:hover { background-color: #218838; }
+        .btn-reservaciones { background-color: #007bff; }
+        .btn-reservaciones:hover { background-color: #0069d9; }
         .card { background-color: #2d2d2d; color: #a9b7c6; padding: 15px; border-radius: 5px; margin-bottom: 10px; overflow-x: auto; }
+        .endpoint-badge { font-size: 0.85em; background: #e9ecef; color: #495057; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 15px; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Prueba de API Bookify</h1>
-        <p>Ingresa tu token de administrador para obtener los datos desde el backend.</p>
+        <p>Ingresa tu token de autorización para verificar los datos de la API.</p>
 
         <div class="form-group">
             <input type="text" id="apiToken" placeholder="Pega tu token aquí (ej. 9944b09199c...)">
-            <button onclick="cargarDatos('/api/espacios/')">Obtener Datos</button>
+            
+            <div class="button-group">
+                <button class="btn-espacios" onclick="cargarDatos('/api/espacios/')">Ver Espacios</button>
+                <button class="btn-reservaciones" onclick="cargarDatos('/api/reservaciones/')">Ver Reservaciones</button>
+            </div>
         </div>
 
         <hr>
         <h2>Resultados:</h2>
+        <div id="endpointActual"></div>
         <div id="resultados">
-            <p style="color: #666;">Los datos aparecerán aquí...</p>
+            <p style="color: #666;">Selecciona un botón arriba para consultar los datos...</p>
         </div>
     </div>
 
@@ -36,36 +46,41 @@
         function cargarDatos(endpoint) {
             const token = document.getElementById('apiToken').value.trim();
             const contenedor = document.getElementById('resultados');
+            const badgeContainer = document.getElementById('endpointActual');
 
             if (!token) {
                 alert("Por favor, ingresa tu Token de autorización.");
                 return;
             }
 
+            badgeContainer.innerHTML = `<span class="endpoint-badge">Consultando: ${endpoint}</span>`;
             contenedor.innerHTML = "<p>Cargando datos...</p>";
 
-            // Hacemos la petición Fetch a tu API
+            // Petición Fetch a la API
             fetch(endpoint, {
                 method: 'GET',
                 headers: {
-                    'Authorization': 'Token ' + token,
+                    'Authorization': 'Bearer ' + token,
                     'Content-Type': 'application/json'
                 }
             })
             .then(response => {
                 if (!response.ok) {
                     if (response.status === 401) throw new Error("Error 401: Token inválido o no autorizado.");
-                    if (response.status === 404) throw new Error("Error 404: Endpoint no encontrado. Revisa la URL en el código HTML.");
+                    if (response.status === 404) throw new Error(`Error 404: El endpoint '${endpoint}' no fue encontrado en el servidor.`);
                     throw new Error("Error en la petición: " + response.status);
                 }
-                return response.json(); // Convertimos la respuesta a JSON
+                return response.json();
             })
             .then(data => {
-                contenedor.innerHTML = ""; // Limpiamos el mensaje de "Cargando"
-                
-                // Si la API devuelve un array de objetos
+                contenedor.innerHTML = ""; // Limpiamos el mensaje de estado
+
+                // Si la API devuelve un arreglo de objetos
                 if (Array.isArray(data)) {
-                    if (data.length === 0) contenedor.innerHTML = "<p>No hay datos registrados aún.</p>";
+                    if (data.length === 0) {
+                        contenedor.innerHTML = "<p>No hay registros guardados en este endpoint.</p>";
+                        return;
+                    }
                     data.forEach(item => {
                         contenedor.innerHTML += `
                             <div class="card">
@@ -74,7 +89,7 @@
                         `;
                     });
                 } else {
-                    // Si devuelve un solo objeto (por ejemplo, con paginación)
+                    // Si devuelve un solo objeto o respuesta paginada
                     contenedor.innerHTML = `
                         <div class="card">
                             <pre>${JSON.stringify(data, null, 4)}</pre>

@@ -10,7 +10,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 
 class EspacioViewSet(viewsets.ModelViewSet):
-    queryset = Espacio.objects.filter(activo=True)
+    queryset = Espacio.objects.all()
     serializer_class = EspacioSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
